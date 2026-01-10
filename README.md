@@ -16,6 +16,11 @@ This project implements a **multi-depot VRPTW** on a bridge-node graph with **bi
 ## Data inputs
 This project uses predefined bridge network subgraphs stored in `Sample-Subgraphs/` for optimization and sensitivity analysis.
 
+## Run the viewer
+```
+python view_subgraph.py --pkl Sample-Subgraphs/bridge_subgraph_001.pkl --output Plots/subgraph-view.pdf
+```
+
 ## Run (single config)
 ```
 python scripts/run_mdvrpdw.py --config base-config.json --output outputs/solution.json
