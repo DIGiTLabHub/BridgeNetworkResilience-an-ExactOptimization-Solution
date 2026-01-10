@@ -1,0 +1,416 @@
+\documentclass[12pt]{article}
+\usepackage{amsmath, amssymb, amsfonts}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{courier}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage[style=apa, backend=biber]{biblatex}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+\usepackage{xcolor}
+\usepackage{xpatch}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{booktabs}
+\usepackage{graphicx} % make sure this package is included
+\geometry{margin=1in}
+\addbibresource{references.bib}
+% Patch to make author+year fully blue
+\xpatchcmd{\blx@parencite}
+  {\printtext[bibhyperref]{\printnames{labelname}\setunit{\printdelim{nameyeardelim}}\printfield{year}}}
+  {\textcolor{blue}{\printtext[bibhyperref]{\printnames{labelname}\setunit{\printdelim{nameyeardelim}}\printfield{year}}}}
+  {}{}
+\xpatchcmd{\blx@textcite}
+  {\printtext[bibhyperref]{\printnames{labelname}\setunit{\printdelim{nameyeardelim}}\printfield{year}}}
+  {\textcolor{blue}{\printtext[bibhyperref]{\printnames{labelname}\setunit{\printdelim{nameyeardelim}}\printfield{year}}}}
+  
+\title{Vehicle and Resource Scheduling for Bridge Inspection: Optimizing Emergency Bridge  Restoration in Post-Disasters}
+\author{ }
+\date{Aug 2025}
+
+\begin{document}
+
+\maketitle
+
+
+\section{Background and Introduction}
+
+\section{Literature review}
+
+\section{Problem Description}
+
+Bridges are a crucial infrastructure in the United States, connecting communities, sustaining economic activity, and facilitating the efficient transportation of goods and people across diverse landscapes \textcolor{blue}{\parencite{chase2003getting,li2019resilience}}
+. However, aging structures, increasing traffic loads, structural failures, and exposure to disasters like vehicle collisions, tornadoes, and earthquakes pose significant risks to the causes of bridge collapse \textcolor{blue}{\parencite{choudhury2015bridge,deng2016state,abdallah2023transferring}}. For instance, the Quebec Bridge collapsed in 1907, leading to 75 fatalities during its construction \textcolor{blue}{\parencite{pearson2006collapse}}; the Silver Bridge failure in 1967 resulted in 46 deaths while it was operational \textcolor{blue}{\parencite{lee2014non}}; and the recent collapse of the Baltimore Bridge in 2024 triggered immediate supply chain disruptions \textcolor{blue}{\parencite{gracia2024supply}}.
+According to the 2024 Bridges report by the American Road and Transportation Builders Association (ARTBA), there are 168.5 million crossings in the United States, with nearly 42,100 bridges rated as poor \textcolor{blue}{\parencite{artba2025}}. This report indicates that approximately one-third of U.S. bridges require urgent repair or replacement \textcolor{blue}{\parencite{artba2024}}.
+
+In Missouri, the Missouri Department of Transportation (MoDOT) maintains 10,424 bridges within the state network. The average age of these bridges is 49 years, and their intended lifespan is 50 years. Alarmingly, approximately 52\% of Missouri’s bridges have surpassed their expected useful life. Currently, 804 bridges are rated poorly according to the Federal Highway Administration (FHA) standards, and many require urgent rehabilitation or replacement to ensure transportation efficiency and safety \parencite{modot2025}. These bridges are particularly susceptible to disasters common in Missouri, such as flooding, collisions, tornadoes, and severe storms. The number of poorly rated bridges exceeds MoDOT’s capacity for financial and human resource management \parencite{modot2025}. As a result, Missouri ranks fourth among all states in the U.S. for the number of poor bridges \parencite{artba2024}.
+
+Given the limited resources and frequent disasters, such as flooding, collisions, and tornadoes, optimizing emergency prevention and rescue efforts for this critical infrastructure in Missouri has become inevitable.
+
+%  \subsection*{ Motivation for the Study} REMOVED AND MERGED WITH SEC 1
+
+The rising number of poorly rated bridges, constrained resources, and frequent natural disasters such as flooding and tornadoes in the Missouri network significantly increase the risk of bridge failures. This situation threatens public safety, disrupts supply chain operations, and jeopardizes economic stability. As a result, it is imperative for decision-makers to efficiently and swiftly optimize their limited resources, including repair budgets, materials, vehicles, and workforce, to enhance emergency recovery efforts. The goal is to minimize total cost and maximize operational functionality while facilitating a rapid return to normalcy by bolstering the system's resilience in the aftermath of infrastructural damage.
+
+In this project, we address the scheduling problem for emergency inspections and restoration of damaged bridges as abstracted in Missouri. A fleet of vehicles carrying maintenance and repair facilities must visit each bridge within its required time window to perform corrective actions that restore it to an acceptable condition in a post-disaster era. We formulated the problem as a multi-depot vehicle routing problem with time windows (MD-VRPTW).  Designated teams must be dispatched in a way that ensures higher-priority bridges are serviced first. We aim to determine the optimal number of rescue teams to conduct these inspections and repairs efficiently and achieve whole-system resilience.
+
+\section*{3. Problem description} % Literature
+This project deals with a bi-objective optimization problem in which three heterogeneous restoration teams are dispatched from multiple depots (emergency stations or districts) to instantly inspect and restore damaged bridges simultaneously after a disaster in Missouri or the network.  This implies that each emergency station has three teams, namely the Rapid Response Unit (RRU), the Emergency Response Team (ERT), and the Critical Infrastructure Recovery Squad (CIRS). Thus, these teams vary in capacity, cost, and capability.  Similarly, bridges vary in resilience and restoration effort, as quantified by the Bridge Functionality Index (BFI). The goal of restoration in this study is to partially restore damaged bridges, mainly to support emergency response actions in the disaster relief operations. Bridges that sustain complete damage during the disaster will not be repaired. However, bridges with moderate, extensive, or slight damage will be restored only to good functionality rather than fully repaired. This is because completely damaged bridges cannot be restored within a week's planning timeframe.
+
+The objective is to minimize operational costs while maximizing system resilience under tight constraints of team availability within the assumed planning horizon. A mixed linear integer programming (MILP) model was formulated as a multi-depot vehicle routing problem with time windows. The restoration activities should be prioritized to meet the minimum level of overall resilience.
+
+\section*{4. Problem description and Formulation}
+\section*{4.1  Model Assumptions}
+\begin{itemize}
+    \item\textbf{Fixed Resources for Repair Teams}: 
+     Each repair team is deployed with a predetermined set of resources, including labor, equipment, and materials, to ensure efficient and effective repair operations. No replenishment, reinforcement, or resupply is allowed throughout the operation.
+    \item\textbf{No Complete Bridge Collapse}: All bridges in the network have suffered partial damage due to disasters; however, none have collapsed entirely. The Bridge Functionality Index (BDI) for each bridge remains below 0.41, allowing partial operability and the possibility of restoration.
+    \item\textbf{Shortest-Time Routing Behavior}:
+    At the beginning of the planning horizon, the shortest path is assumed to be deterministic and independent of bridge status. It is computed using the Dijkstra algorithm.
+    \item\textbf{Deterministic Repair Durations}: The repair time for each bridge is assumed to be known and fixed in advance. It does not vary due to uncertainty or external disruptions. Each bridge is assigned to one rescue team at most.
+    \item\textbf{Bridge Functionality Index (BFI)}: Measures a bridge's operational status or usability post-disaster; the bridges’ actual functionality indices are the same as the estimated ones via a deterministic risk analysis.
+   \item\textbf{Depot Configuration}: All emergency stations are equipped with the same three types of rescue teams. The cost and time needed to repair a given bridge depend on the kind of team assigned to the task.  The team comprises the Rapid Response Unit (RRU), Critical Response Team (CRT), Emergency Response Unit, and Critical Infrastructure Recovery Squad (CIRS).
+   \item\textbf{Planning horizon}: Restoration activities are assumed to be confined to the week they are initiated; no repair task may extend beyond one week.
+\end{itemize}
+\section*{4.2   Network Definitions  and Model Formulation }
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.2\linewidth]{Bridges Network.png}
+    \caption{Abstracted Bridges' Network}
+    \label{fig:enter-label}
+\end{figure}
+The \textcolor{blue}{Fig. 1} above is an abstracted transportation network modeled as a directed graph \( G = (\mathcal{V}, \mathcal{A}) \), where \( \mathcal{V} \) denotes the set of all nodes, including intersections, bridges, and emergency restoration station nodes. A subset \( C = \{c_1, c_2, \dots, c_n\} \subset \mathcal{V} \) represents the cities or intersection districts that connect major roads. Within this set, a further subset \( D \subset C \) identifies the cities in red colour designated as depots serving as emergency stations or districts from which the three specialized teams are dispatched. The set of bridges is defined as \( B = \{b_{i,j}^n : i, j \in C, \, n \in \mathbb{N}^+\} \), where each bridge connects a unique pair of adjacent cities and is indexed by \( n \) to distinguish multiple bridges along the same route.
+
+The arc set \( \mathcal{A} \subseteq \mathcal{V} \times \mathcal{V} \) defines the directed edges or road segments between nodes, representing allowable travel directions between intersections and bridges. Each arc is associated with a travel time \( \eta_{ij} \) and may also include capacity and distance attributes. The planning horizon \( T \) is discretized into time units (in days), allowing for temporal scheduling of restoration activities.
+Each bridge \( i \in B \) is associated with a post-disaster Bridge Functionality Index (BFI), \( \xi_i \in [0.1, 0.4] \), with average post-disaster resilience without restoration as 0.32, as computed before restoration. Upon restoration by the team\( k \in K \), the bridge's condition improves to a post-restoration BFI denoted by \( \xi_{ik}^{\text{New}} = \min(\xi_i + \delta_k, 1) \), where \( \delta_k \) is a team-specific improvement parameter. The available restoration teams are given by the set \( K = \{\text{RRU}, \text{ERT}, \text{CIRS}\} \), representing the Rapid Response Unit, Emergency Repair Team, and Critical Infrastructure Recovery Squad, respectively. Each team type is characterized by a fixed service time \( \theta_k \in \{1,1,1\} \) (in days) and a base cost \( \text{base\_cost}_k \in \{1, 2, 5\} \). The total cost of restoring bridge \( i \) with team \( k \), denoted \( c_{ik} \), is defined as:\[
+c_{ik} = \text{base\_cost}_k \cdot \left(1 + \alpha \cdot (1 - \xi_i)\right),
+\] where \( \alpha \) is a cost adjustment factor that scales the cost based on the severity of bridge damage. Additionally, each bridge has a restoration deadline \( \text{Due}_i \), which specifies the latest allowable time for task completion.
+To handle conditional constraints and enforce sequencing logic in time-indexed decisions, a large constant \( M \) is incorporated using big-\( M \) formulations within the optimization model.As shown in \textcolor{blue}{Fig. 1}, the abstracted network consists of six main cities (\( C1 \) to \( C6 \)), with depots highlighted in red and standard cities in green. Fifteen bridges (e.g., BC1C20, BC4C60) are represented as intermediate nodes connecting pairs of cities. Directed arcs indicate travel possibilities, forming the basis for routing emergency teams, scheduling inspections, and planning restorative operations following disruptive events. The description above is mathematically expressed below.
+\section*{4.3 Model Formulation}
+\section*{Sets and Indices}
+\begin{itemize}
+  \item  \(\mathcal{V}\) The set of all intersections, bridges, and emergency restoration station nodes.
+    \item \( C = \{c_1, c_2, \dots , c_n\}\subset \mathcal{V} \) the set of intersection districts connecting two roads, where \( n\ll |\mathcal{V}|\)
+ \item \( B = \{b_{i,j}^n : i, j \in C, \quad n \in \{1, 2, 3, \dots\}\} \) the set of bridges between two consequential intersections, where \(n\) (i.e., the bridge number) is attributed within two adjacent intersections \( c_i, c_j\).
+  \item $D$: Set of depots or set of emergency stations. 
+\item $K$: Set of team types or restoration teams: RRU (Rapid Response Unit), ERT (Emergency Response Team), and CIRS (Critical Infrastructure Recovery Squad)
+  \item $T$: Discrete planning horizon in days
+  \item $\mathcal{A}$: Set of arcs $(i,j)$ representing possible travel connections between nodes in the network
+\end{itemize}
+
+\section*{Parameters}
+\begin{itemize}
+    \item \( \eta_{ij} \): Travel time between nodes \( i \) and \( j \)
+    \item \( \theta_k \): Service time (in day) required by team \( k \), where \( \theta_k \in \{1, 1, 1\} \) for RRU, ERT, and CIRS respectively
+    \item \(a_i\): Earliest allowable time to begine restoration activity on bridge \(i \in B\)
+    \item \( b_i \): Latest allowable finish time for restoring bridge \( i \)
+    \item \( \xi_i \): Post-disaster Bridge Functionality Index (BFI) of bridge \( i \), it is between 0 and 1  
+    \item \( \xi_{ik}^{\text{New}} \): Post-restoration BFI of bridge \( i \) when restored by team \( k \),
+    \item \( c_{ik} \): Cost of restoring bridge \( i \) by team \( k \),computed as \( \text{base\_cost}_k \cdot (1 + \alpha \cdot (1 - \xi_i)) \)
+    \item \( M \): A large constant used for big-\( M \) logic in time-based constraints
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\scriptsize
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{cllcccccccc}
+\toprule
+\textbf{S/N} & \textbf{Bridge} & \textbf{Time Window} & \textbf{BFI} &
+\textbf{RRU Cost} & \textbf{RRU BFI (New)} &
+\textbf{ERT Cost} & \textbf{ERT BFI(New)} &
+\textbf{CIRS Cost} & \textbf{CIRS BFI(New)} \\
+\midrule
+1  & BC1C20 & 1 to 3 & 0.32 & 1340 & 0.62 & 2680 & 0.87 & 6700 & 1.00 \\
+2  & BC1C30 & 2 to 6 & 0.39 & 1300 & 0.69 & 2610 & 0.94 & 6520 & 1.00 \\
+3  & BC1C40 & 2 to 5 & 0.23 & 1390 & 0.53 & 2770 & 0.78 & 6920 & 0.98 \\
+4  & BC1C50 & 2 to 5 & 0.30 & 1350 & 0.60 & 2700 & 0.85 & 6750 & 1.00 \\
+5  & BC1C60 & 1 to 6 & 0.40 & 1300 & 0.70 & 2600 & 0.95 & 6500 & 1.00 \\
+6  & BC2C30 & 1 to 6 & 0.26 & 1370 & 0.56 & 2740 & 0.81 & 6850 & 1.00 \\
+7  & BC2C40 & 2 to 7 & 0.35 & 1320 & 0.65 & 2650 & 0.90 & 6620 & 1.00 \\
+8  & BC2C50 & 1 to 6 & 0.26 & 1370 & 0.56 & 2740 & 0.81 & 6850 & 1.00 \\
+9  & BC2C60 & 1 to 4 & 0.35 & 1320 & 0.65 & 2650 & 0.90 & 6620 & 1.00 \\
+10 & BC3C40 & 2 to 4 & 0.25 & 1380 & 0.55 & 2750 & 0.80 & 6880 & 1.00 \\
+11 & BC3C50 & 2 to 4 & 0.35 & 1320 & 0.65 & 2650 & 0.90 & 6620 & 1.00 \\
+12 & BC3C60 & 0 to 2 & 0.39 & 1300 & 0.69 & 2610 & 0.94 & 6520 & 1.00 \\
+13 & BC4C50 & 2 to 4 & 0.24 & 1380 & 0.54 & 2760 & 0.79 & 6900 & 0.99 \\
+14 & BC4C60 & 1 to 3 & 0.39 & 1300 & 0.69 & 2610 & 0.94 & 6520 & 1.00 \\
+15 & BC5C60 & 1 to 4 & 0.35 & 1320 & 0.65 & 2650 & 0.90 & 6620 & 1.00 \\
+\bottomrule
+\end{tabular}%
+}
+\caption{Bridge repair costs and BFI improvement by team}
+\label{tab:bridge-costs-bfi}
+\end{table}
+
+\section*{Decision Variables}
+\paragraph{1. Routing Decision Variable}
+\[
+x_{ij}^{dk} =
+\begin{cases}
+1, & \text{if team } k \text{ travels from node } i \text{ to node } j \text{ from depot } d \\
+0, & \text{otherwise}
+\end{cases}
+\]
+
+\paragraph{2. Restoration Assignment Variable}
+\[
+y_{it}^{dk} =
+\begin{cases}
+1, & \text{if team } k \text{ restores bridge } i \text{ at time } t \text{ from depot } d \\
+0, & \text{otherwise}
+\end{cases}
+\]
+
+\paragraph{3. Start Time Variable}
+\[
+s_{i}^{dk} \geq 0 \quad \text{Start time for team } k \text{ from depot } d \text{ to begin restoring bridge } i
+\]
+
+\section*{Objective Functions} The study has two objective functions: to maximize the system resiliency in the disaster era and to minimize the total operational costs of inspecting and restoring the bridges.
+\paragraph{1. Maximize Network Resilience}
+
+One of the primary objectives of the model is to maximize the overall network resilience after a post-disaster restoration effort. This is mathematically expressed as
+\begin{equation}
+    \max Z = \frac{1}{|B|}\bigg[\big( \sum_{i \in B} \sum_{(d,k) \in D \times K} \sum_{t \in T}  \xi_{ik}^{\text{New}} \cdot y_{it}^{(d,k)} \big)+ \bigg( \sum_{i \in B}{\xi_{i} \cdot (1- \sum_{t\in T}\sum_{(d,k) \in D\times K}}y_{it}^{(d,k)}\big)\bigg)\bigg]
+\end{equation}
+
+where \( B \) denotes the set of all bridges and \( |B| \) represents the total number of bridges in the network. The term \( D \times K \) captures all combinations of available depots \( d \in D \) and restoration team types \( k \in K \), while \( T \) refers to the discrete planning horizon, typically measured in hours or days. The parameter \( \xi_{ik}^{\text{New}} \in [0,1] \) is the post-restoration Bridge Functionality Index (BFI) of bridge \( i \), which reflects the improved structural condition or serviceability after it is restored by team \( k \) from depot \( d \). This value is team-specific and encapsulates the effectiveness of different team types. The binary decision variable \( y_{it}^{dk} \in \{0,1\} \) indicates whether the restoration of bridge \( i \) is performed by team \( k \) from depot \( d \) at time \( t \). The triple summation aggregates the total resilience improvements contributed by all restored bridges, considering when and by whom they are restored. By dividing the summation by the total number of bridges \( |B| \), the model yields a normalized average resilience score, ensuring that the objective function reflects proportional improvements across the entire network rather than just the absolute sum. This resilience-centric objective helps prioritize the allocation of limited resources to interventions that yield the highest functional gains under post-disaster constraints.
+
+
+
+
+\paragraph{2. Minimize Total Cost }
+\begin{equation}
+\min W = \sum_{i \in B} \sum_{(d,k) \in D \times K} \sum_{t \in T} c_{ik} \cdot y_{it}^{(d,k)}
+\end{equation}
+The cost minimization objective seeks to reduce the total expenditure incurred in deploying restoration teams to repair damaged bridges across the transportation network. It is mathematically represented as the sum of the restoration costs \( c_{ik} \) incurred when team \( k \), originating from depot \( d \), restores bridge \( i \) at time \( t \). The decision variable \( y_{it}^{dk} \) determines whether a restoration occurs, with the cost being applied only when the variable equals one. Importantly, the cost \( c_{ik} \) is not constant; it varies by team type and is adjusted based on the severity of damage to each bridge. This is captured by the formula \( c_{ik} = \text{base\_cost}_k \cdot (1 + \alpha \cdot (1 - \text{BFI}_i)) \), where \( \text{BFI}_i \) or \( \xi_i \) is the pre-restoration Bridge Functionality Index and \( \alpha \) is a cost adjustment factor. As a result, more severely damaged bridges (lower BFI) incur higher restoration costs. 
+
+\section*{Constraints}
+
+\paragraph{1. Single Restoration Constraint}
+\begin{equation}
+\sum_{(d,k) \in D \times K} \sum_{t \in T} y_{it}^{(d,k)} \leq 1 \quad \forall i \in B
+\end{equation} This constraint (1) ensures that each bridge can be visited and restored at most once. It is worth noting that the constraint allows for selecting the bridge that yields the best outcome, and there is no requirement to repair all bridges within the available time window. Instead, bridges are visited and repaired based on the availability of emergency teams and the time constraints.
+
+\paragraph{2. Link Assignment to Routing (Incoming)}
+\begin{equation}
+\sum_{i \in V \setminus \{j\}} x_{ij}^{(d,k)} = \sum_{t \in T} y_{jt}^{(d,k)} \quad \forall j \in B, \forall (d,k) \in D \times K
+\end{equation}
+This constraint links the routing decision variables \( x_{ij}^{dk} \) with the visiting decision variables \( y_{jt}^{dk} \). It ensures that a bridge \( j \in B \) can be visited by a team \( k \) from depot \( d \) only if a corresponding route to that bridge exists.
+
+\paragraph{3. Link Assignment to Routing (Outgoing)}
+\begin{equation}
+\sum_{j \in V \setminus \{i\}} x_{ij}^{(d,k)} = \sum_{t \in T} y_{it}^{(d,k)} \quad \forall i \in B, \forall (d,k) \in D \times K
+\end{equation}
+This constraint ensures consistency between routing and servicing decisions. Specifically, if a bridge \( i \in B \) is scheduled to be visited by team \( k \) from depot \( d \) at any time \( t \), then there must exist exactly one outgoing route from node \( i \) associated with that team and depot. In other words, a team can depart from a bridge only if it has been assigned to service that bridge.
+
+\paragraph{4. Departure/ Return from and to Depot}
+\begin{equation}
+\sum_{j \in B} x_{dj}^{dk} = 1 \quad \forall dk \in D \times K, \text{ where } d = dk_0
+\end{equation}
+\begin{equation}
+\sum_{i \in B} x_{id}^{dk} = 1 \quad \forall dk \in D \times K, \text{ where } d = dk_0
+\end{equation} These two constraints ensure that each team finishes its route by returning to the same depot it started from. In other words, after completing their assigned tasks at the bridges, teams must go back to their original location.
+
+
+\paragraph{5. Linking Restoration Time to Binary Assignment (Upper Bound)}
+\begin{align}
+s_{i}^{dk} + \theta_k - t &\leq M(1 - y_{it}^{dk}) &&\forall i \in B,\ \forall (d,k) \in D \times K,\ \forall t \in T \\
+s_{i}^{dk} + \theta_k - t &\geq -M(1 - y_{it}^{dk}) &&\forall i \in B,\ \forall (d,k) \in D \times K,\ \forall t \in T 
+\end{align}
+These two constraints together force the service start time \( s_i^{dk} \) to correspond to time period \( t \) if and only if the binary decision variable \( y_{it}^{(d,k)} = 1 \), meaning bridge \( i \) is visited by team \( k \) from depot \( d \) at time \( t \). The big-\( M \) terms deactivate this constraint when \( y_{ikt}^{dk} = 0 \).
+
+
+\paragraph{6. Time Progression Between Visits}
+\begin{equation}
+s_{j}^{dk} \geq s_{i}^{dk} + \theta_k + \eta_{ij} - M(1 - x_{ij}^{dk}) \quad \forall i \neq j \in V, j \in B
+\end{equation}
+This constraint plays a vital role in eliminating sub-tours by enforcing time-based precedence between visited nodes. If a team travels from node \( i \) to bridge \( j \), then the service at \( j \) cannot start before the service at \( i \) has been completed, plus the required travel time. In the case where \( i \) is a depot, the initial time is considered zero. 
+
+\paragraph{7. Time-Window Compliance}
+\begin{equation}
+s_{i}^{dk} + \theta_k \leq b_i \quad \forall i \in B, \forall dk \in D \times K
+\end{equation}
+\begin{equation}
+s_{i}^{dk} \geq a_i \quad \forall i \in B,\ \forall dk \in D \times K 
+\end{equation} Equation (11) ensures that the entire service (including duration \( \theta_k \)) finishes before its deadline, while equation (12) guarantees that servicing on the bridge \( i \) does not begin before it becomes available. Thus, constraint (7), which combines equations 11 and 12, enforces feasibility within the defined time window of each bridge.
+\paragraph*{8. Epsilon Constraint}
+\begin{equation}
+\sum_{i \in B} \sum_{(d,k) \in D \times K} \sum_{t \in T} c_{ik} \cdot y_{it}^{dk} \leq \epsilon
+\end{equation}  This constraint restricts the total restoration cost across all bridges, teams, and time periods to not exceed a predefined budget threshold \(\epsilon\), thereby enabling the model to identify resilience-maximizing solutions within cost-limited scenarios using the \(\varepsilon\)-constraint method.  $\epsilon$ will be used to trace the Pareto frontier of trade-offs between resilience and cost.
+
+\paragraph*{9. Variable Bounds:}
+\begin{equation}
+x_{ij}^{dk} \in {(0, 1)} \quad \forall (i, j) \in \mathcal{A},\ \forall dk \in D \times K,
+\end{equation}
+\begin{equation}
+y_{it}^{dk} \in {(0, 1)} \quad \forall i \in B,\ \forall t \in T,\ \forall dk \in D \times K,
+\end{equation}
+
+\begin{equation}
+s_{i}^{dk} \geq 0 \quad \forall i \in B,\ \forall dk \in D \times K
+\end{equation}
+
+
+
+
+
+
+
+
+
+
+\section*{6. Model Results and Discussion}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Routing Result.png}
+    \caption{Emergency Routing Paths by Team}
+    \label{fig:enter-label}
+\end{figure}
+
+The \textcolor{blue}{Fig. 2} illustrates the optimal routing paths generated by the model for three types of emergency restoration teams: RRU (Rapid Response Unit), ERT (Emergency Repair Team), and CIRS (Critical Infrastructure Recovery Squad). Each color represents the routing assignments of a specific team: \textcolor{blue}{\textbf{blue edges}} for RRU team routes, \textcolor{orange}{\textbf{orange edges}} for ERT team routes, and  \textcolor{green}{\textbf{green edges}} for CIRS team routes. The network includes depots (highlighted in red) and non-depot cities (in green), with bridges represented as labeled nodes. The plotted graph confirms that all three teams are actively deployed, and 13  out of 15 bridges were restored within the planning horizon, routed to various bridges across the network, following feasible and resource-efficient paths. Bridges (BC5C60 and BC3C60) were not visited due to time windows and resource constraints. 
+\paragraph{Routing Decisions}The model identifies the optimal travel paths for each restoration team across the network. For instance, the ERT team based at depot C1 is routed to bridge \texttt{BC1C20}, while the RRU team from depot C2 travels between \texttt{BC2C60} and \texttt{BC1C50}. The CIRS team from depot C2 is assigned to visit bridges such as \texttt{BC3C40} and \texttt{BC1C40}. These decisions ensure that travel costs and service time constraints are respected while maintaining efficiency in network traversal.
+\paragraph{Restoration Assignments} Specific teams are assigned to restore targeted bridges within defined time windows. For example, \texttt{BC1C20} is restored by the ERT team from C1 at time step 3, and \texttt{BC2C40} is handled by the CIRS team from C2 at time step 7. The scheduling ensures that each bridge is restored by only one team and within its allowable restoration window.
+\paragraph{Service Start Times}: Restoration start times for each bridge are strategically distributed across the planning horizon. Notably, \texttt{BC1C20} is restored starting at day 2, \texttt{BC4C60} at  day 2, and \texttt{BC2C50} at day 5. This ensures that the model avoids overlaps in team assignments and adheres to restoration time and sequencing constraints.
+\paragraph{Overall Operational Coordination}
+The results demonstrate coordinated multi-team routing and scheduling from depots C1 and C2. The model balances assignments among the RRU, ERT, and CIRS teams, ensuring workload distribution and coverage of critical bridges. Restoration occurs without time conflicts and maximizes overall network resilience under limited resources and time availability.
+\section*{6.1 Resilience vs. Cost Trade-Off Analysis}
+The objective of the model is to balance two competing goals: maximizing the overall network resilience and minimizing total restoration costs. The solution space shows a clear trade-off relationship between these objectives. The minimum achievable network resilience observed in the simulation is \( 0.516 \), associated with a total cost of \$20.92 in thousands. In contrast, the maximum resilience score obtained is approximately \( 0.791 \), which incurs a significantly higher cost of \$50.05. This range demonstrates the fundamental trade-off: higher resilience requires investment in more capable or multiple restoration teams and prioritization of critical bridges. The decision-maker can use these boundary values to establish operating policies, as best depicted below through the Pareto Frontier graph in \textcolor{blue}{Fig.3} below, for instance, if budget constraints are tight, a solution near the lower end of the cost-resilience spectrum may be selected. Conversely, if restoring post-disaster functionality is of the utmost importance, a higher-cost, higher-resilience configuration is preferable.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Pareto Frontier.png}
+    \caption{Pareto Frontier: Resilience vs Cost}
+    \label{fig: Pareto Frontier: Resilience vs Cost}
+\end{figure} 
+\section*{6.2 Gantt Chart Analysis}
+The Gantt Chart in \textcolor{blue}{Fig.4} shows the restoration schedule for bridges by three specialized teams \textbf{RRU}, \textbf{ERT}, and \textbf{CIRS} from depots \textbf{C1} and \textbf{C2} over a discrete planning horizon measured in days. 
+At \textbf{Depot C1}, the ERT team restores \texttt{BC1C20} and \texttt{BC1C60} on Days 2 and 4, respectively, while the RRU team is assigned to \texttt{BC4C60} and \texttt{BC2C50} on Days 2 and 4. The CIRS team completes \texttt{BC4C50} on Day 3 and \texttt{BC2C30} on Day 5.
+At \textbf{Depot C2}, the ERT team restores \texttt{BC3C50} and \texttt{BC1C30} on Days 3 and 5, while the RRU team handles \texttt{BC2C60} and \texttt{BC1C50} on Days 2 and 4. The CIRS team is responsible for \texttt{BC3C40}, \texttt{BC1C40}, and \texttt{BC2C40} on Days 2, 4, and 6, respectively.
+The schedule reflects a feasible plan that maximizes team utilization and complies with each bridge’s allowable time window. This coordination enables a balanced distribution of workloads and ensures that restoration efforts are aligned with operational constraints to support a resilient and timely post-disaster recovery.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{Gatt Chart.png}
+    \caption{Gatt Chart of the Base Model}
+    \label{fig:enter-label}
+\end{figure}
+\section*{6.3 Trajectory of Cost and Resilience over Time}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.75\linewidth]{Trajectory.png}
+    \caption{Base model Trajectory of cost and resilience over time}
+    \label{fig:enter-label}
+\end{figure}
+The graph in \textcolor{blue}{Fig.5 } above illustrates the trajectory of cumulative cost and network resilience over a seven-day planning horizon, with the model solved under the objective of maximizing resilience. The horizontal axis represents time ($t$) in days, while the left vertical axis (blue) indicates the cumulative resilience achieved, and the right vertical axis (red) denotes the total cost incurred, expressed in thousands of dollars. The cost curve, represented by red squares, remains flat during the first three days, followed by a marked increase beginning on Day 4. This suggests that substantial restoration activities and associated expenditures commence only after the initial phase, likely due to team mobilization, access constraints, or preparatory logistics. A similar pattern is observed in the resilience trajectory, shown by blue diamonds, which also begins to rise on Day 4 and continues upward in parallel with cost. This alignment confirms a strong positive correlation between investment and system recovery, indicating that resilience improvements are directly contingent upon the allocation of restoration resources.
+
+The steep upward trend from Day 4 through Day 7 highlights that the majority of restorative gains are achieved in the latter part of the schedule. This observation reinforces the operational insight that early-stage inactivity delays network recovery, while concentrated restoration efforts in the mid-to-late horizon yield significant resilience benefits. Overall, the graph underscores the critical role of timely intervention and resource prioritization in post-disaster infrastructure recovery, emphasizing that resilience optimization is inherently tied to strategic cost deployment over time.
+
+
+
+\section*{7. Sensitivity Analysis} The study conducted a series of sensitivity analyses on the following parameters to test the robustness of the base model's optimal route path solution.
+\subsection*{7.1 Service Time Variation}
+A sensitivity analysis was conducted to assess the robustness of the base model by altering the service time parameter. Specifically, the original uniform service time of $(1, 1, 1)$ days for the three restoration teams, Rapid Response Unit (RRU), Emergency Repair Team (ERT), and Critical Infrastructure Recovery Squad (CIRS), was modified to $(1, 2, 2)$ days, respectively. All other model parameters and constraints remained consistent with the base case scenario. \textcolor{blue}{Fig. 6} illustrates the adjusted routing paths under the new service time configuration. The figure highlights the modified travel routes and reduced bridge coverage, showcasing how extended service durations constrain spatial deployment across the network.
+As a result of this change, the model's optimal solution adjusted significantly. Only nine bridges were selected for restoration within the planning horizon, compared to thirteen in the base scenario. This reduction is attributed to the increased service durations, which limited the teams’ availability and flexibility in route scheduling. The total restoration cost increased to \$25.77, and the average network resilience dropped to 0.59, indicating a trade-off between extended service requirements and operational efficiency. 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Service Time Variation.png}
+    \caption{Service Time Variation}
+    \label{fig:enter-label}
+\end{figure}
+\subsection*{7.2 Gantt Chart Analysis of Service Time Variation}
+\textcolor{blue}{Fig. 7} depicts the Gantt chart of the restoration timelines with changes in service variation of teams from Depots C1 and C2 over a 7-day planning horizon. From Depot C1, the Rapid Response Unit (RRU) executes tasks sequentially, starting with BC4C50 on Day 2, BC1C60 on Day 4, and BC2C40 on Day 6, demonstrating efficient task distribution over time. The Emergency Repair Team (ERT) and the Critical Infrastructure Recovery Squad (CIRS) operate in parallel on Day 3: ERT restores BC1C50 while CIRS handles BC1C40. It reflects coordinated resource allocation with no overlapping resource contention. At Depot C2, RRU initiates with BC2C60 on Day 2 and follows with BC2C30 on Day 5. CIRS begins BC2C50 on Day 3, while ERT works on BC1C30 from Day 4. All restorations are completed within 7 days, confirming that the model effectively schedules teams to minimize idle time and meet restoration deadlines.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Service Time Variations (Team).png}
+    \caption{Gantt Chart  with Service Time Variation}
+    \label{fig:enter-label}
+\end{figure}
+\subsection*{7.3 Time Window Sensitivity} 
+In this sensitivity scenario, the allowable start time for bridge restoration (\(a_i\)) was uniformly reduced by one day across all bridges, thereby tightening the feasible time windows for dispatching emergency teams. All other model parameters and variables were consistent with the base model configuration. Under this adjusted setting, the model restored 11 out of 15 bridges, resulting in a total operational cost of \$42,080 and achieving a network resilience of 72\%. This reflects a moderate decrease in both coverage and resilience compared to the base scenario, emphasizing the impact of more restrictive scheduling conditions. 
+
+The \textcolor{blue}{Fig:8} illustrates the optimized routing configuration corresponding to this time window adjustment. Routes are color-coded by team: RRU (blue), ERT (orange), and CIRS (green). Compared to the base model, the figure reveals a more compact and non-overlapping set of paths, indicating that the optimization algorithm favored temporally accessible bridges while respecting the tightened availability constraints. This analysis highlights the model's sensitivity to early-stage scheduling flexibility. While it continues to perform efficiently under more constrained conditions, the reduction in bridge coverage suggests that sufficient restoration lead times are critical to maintaining a high level of infrastructure resilience in post-disaster operations.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Time Window Reduction.png}
+    \caption{Time Window Sensitivity}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsection*{7.4 Gantt Chart when time window Reduced} 
+The Gantt chart illustrates the bridge restoration schedules for teams from Depots C1 and C2 over the planning horizon. At Depot C1, team activities are evenly staggered: CIRS initiates early tasks (e.g., BC4C50), followed by RRU and ERT on BC2C60 and BC2C40, respectively, ensuring non-overlapping utilization. Depot C2 similarly exhibits efficient scheduling, with early assignments (BC3C40, BC3C50, BC5C60) completed by Day 3 and later tasks (BC1C30, BC1C60, BC2C30) clustered at Day 4, as shown in \textcolor{blue}{Fig:9}. This structured deployment reflects high coordination and balanced workload distribution across
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Gantt Chart when Time Window Reduced .png}
+    \caption{Gantt Chart when Time Window Reduced}
+    \label{fig:enter-label}
+\end{figure}
+
+ \subsection*{7.5 Sensitivity Analysis when Initial Bridge Functionality Index increased from 32\% to 42\% }
+
+In this sensitivity analysis, the average initial Bridge Functionality Index (BFI) or the baseline resilience was increased from 32\% to 42\%, as a way to assess its impact on system resilience. The model results show that 13 out of 15 bridges were successfully restored, achieving an overall resilience level of 86\% at a cost of \$48,309. Compared to the base case, this scenario demonstrates that a higher initial BFI enables broader restoration coverage and significantly improves post-disaster network performance without a proportionate increase in cost. As illustrated in \textcolor{blue}{Fig:10}, the routing paths remain well distributed among RRU, ERT, and CIRS teams, confirming that enhanced baseline infrastructure conditions strengthen the system's capacity to recover efficiently under limited resources.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Initial BFI Increased.png}
+    \caption{Initial BFI Increased}
+    \label{fig:enter-label}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Gantt Chart when BFI Increased.png}
+    \caption{Initial BFI Increased}
+    \label{fig:enter-label}
+\end{figure}
+\textcolor{blue}{Fig. 11} above shows the Gantt chart illustrating the restoration schedule under improved infrastructure conditions, where the initial Bridge Functionality Index (BFI) was increased from 32\% to 40\%. This enhancement resulted in more efficient task allocation across both depots. In Depot C1, all three teams (ERT, CIRS, and RRU) were engaged as early as Day 2, with additional tasks scheduled by Day 4, reflecting balanced and timely resource utilization. Similarly, Depot C2 shows concurrent team operations on Days 2 and 4 and an extended restoration task completed by CIRS on Day 6. The early and overlapping deployments indicate that the elevated initial BFI expanded the feasible restoration window, allowing more bridges to be serviced within the planning horizon. This outcome demonstrates the model’s sensitivity to initial network conditions and confirms that higher baseline functionality significantly improves resilience outcomes through enhanced scheduling flexibility.
+\subsection*{7.6 Sensitivity Analysis Summary}
+\begin{table}[H]
+\centering
+\caption{Summary of the Sensitivity Analysis}
+\begin{tabular}{|c|l|c|r|c|}
+\hline
+\textbf{Sn} & \textbf{Scenarios} & \textbf{Resilience} & \textbf{Cost (\$)} & \textbf{No. of Bridges Restored} \\
+\hline
+1 & Service Time Variations              & 0.59 & 20,700 & 9  \\
+2 & Time Window Reduced                  & 0.72 & 42,080 & 11 \\
+3 & Initial BFI Increased to 42\%        & 0.86 & 48,309 & 13 \\
+\hline
+\end{tabular}
+
+\vspace{0.5em}
+\begin{flushleft}
+\footnotesize
+\textit{Note:} The base model's highest possible resilience is 0.79 with a cost of \$50,500, while the minimum possible resilience is 0.51 with a cost of \$20,000.
+\end{flushleft}
+\end{table}
+
+
+\section*{8. Limitations}  One of the limitations of this applied research project is the absence of real data to implement it, including data related to the restoration service time, bridge functionality index, and distance between nodes. Similarly, the model assumes that all the data are deterministic without considering uncertainty in post-disaster relief operations and lacks metaheuristic algorithms to handle the model complexity and computational challenges. The model is susceptible to parameter changes, which increases the computational time and, consequently, limits the number of sensitivity analyses we intend to perform. Therefore, for the model to be more robust and feasible for post-disaster bridge inspection and restoration activities, a more dynamic approach with metaheuristic algorithms such as the genetic algorithm and tabu search will improve the model's performance, as we look forward to incorporating this into the model to advance the project.
+\section*{9. Recommendations} This study presents a promising optimization-based framework for emergency bridge inspection and restoration scheduling. Despite its demonstrated effectiveness, several limitations should inform managerial application and future research. Academically, the model’s reliance on exact optimization techniques limits its scalability and computational efficiency, particularly as problem size and parameter variability increase. To enhance robustness and applicability, future extensions should incorporate metaheuristic algorithms such as Genetic Algorithms (GA) and Tabu Search (TS), which can more effectively navigate complex, high-dimensional solution spaces. These methods will allow for improved convergence and greater adaptability under uncertain conditions. Furthermore, integrating stochastic programming or robust optimization approaches will better capture the probabilistic nature of post-disaster disruptions and improve decision resilience.
+In summary, while the model offers a strong foundation for post-disaster infrastructure planning, its evolution into a dynamic, data-driven, and uncertainty-aware tool will be critical for academic advancement and practical deployment in real-world emergency logistics systems.
+
+\section*{10. Conclusion} The proposed MD-VRPTW  with a bi-objective model offers a robust and adaptable framework for emergency bridge restoration scheduling and planning. It concurrently optimizes dispatch routing, team-to-bridge assignments, and temporal restoration schedules, ensuring operational feasibility under resource and time constraints. Furthermore, by generating a resilience–cost Pareto frontier, the model equips decision-makers with a structured basis for evaluating trade-offs and selecting policies that align with strategic resilience objectives and budgetary limitations.
+
+
+\newpage
+\printbibliography
+\section{Appendixes}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\linewidth]{Time window enlarged, beginning -1 and latest +1 day.png}
+    \caption{Time window enlarged, beginning -1 and latest +1 day}
+    \label{}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\linewidth]{image.png}
+    \caption{Gantt Chart when Time window enlarged}
+    \label{fig:enter-label}
+\end{figure}
+
+
+
+\end{document}

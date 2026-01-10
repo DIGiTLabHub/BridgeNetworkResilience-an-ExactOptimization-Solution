@@ -1,0 +1,5 @@
+# ignore the source data folder
+Missouri-Bridges-GeoData-Graphs/
+*.log
+*.tmp
+output.txt

@@ -1,0 +1,9 @@
+pandas
+geopandas
+networkx
+matplotlib
+numpy
+openpyxl
+
+# Optional (optimization phase)
+# gurobipy
