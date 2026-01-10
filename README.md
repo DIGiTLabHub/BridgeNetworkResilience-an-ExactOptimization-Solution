@@ -13,15 +13,8 @@ This project implements a **multi-depot VRPTW** on a bridge-node graph with **bi
 - `scripts/run_sensitivity.py` parameter sweep runner
 - `MD-VRPDW-design.md` formulation and assumptions
 
-## Generate generic subgraph
-```
-python "Missouri-Bridges-GeoData-Graphs/Create_subgraph.py" \
-  --counties Clinton \
-  --max-bridges 10 \
-  --random-state 42 \
-  --save-generic-subgraph \
-  --generic-index 1
-```
+## Data inputs
+This project uses predefined bridge network subgraphs stored in `Sample-Subgraphs/` for optimization and sensitivity analysis.
 
 ## Run (single config)
 ```
