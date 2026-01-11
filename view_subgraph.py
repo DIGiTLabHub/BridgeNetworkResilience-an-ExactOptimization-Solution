@@ -19,12 +19,24 @@ def _split_nodes(graph: nx.Graph):
     return depots, bridges
 
 
-def _scaled_positions(graph: nx.Graph):
+def _scaled_positions(graph: nx.Graph, target_width: float = 9.0, target_height: float = 6.0, pad: float = 0.5):
     latitudes = np.array([graph.nodes[node]["latitude"] for node in graph.nodes])
     longitudes = np.array([graph.nodes[node]["longitude"] for node in graph.nodes])
-    scale_factor = 1000
+
+    min_lon = longitudes.min()
+    max_lon = longitudes.max()
+    min_lat = latitudes.min()
+    max_lat = latitudes.max()
+
+    dx = max(max_lon - min_lon, 1e-6)
+    dy = max(max_lat - min_lat, 1e-6)
+
+    usable_width = max(target_width - 2 * pad, 1e-3)
+    usable_height = max(target_height - 2 * pad, 1e-3)
+    scale = min(usable_width / dx, usable_height / dy)
+
     return {
-        node: ((lon - longitudes.min()) * scale_factor, (lat - latitudes.min()) * scale_factor)
+        node: ((lon - min_lon) * scale + pad, (lat - min_lat) * scale + pad)
         for node, (lat, lon) in zip(graph.nodes, zip(latitudes, longitudes))
     }
 
@@ -40,6 +52,41 @@ def _print_stats(graph: nx.Graph):
     print(f"Depots: {len(depots)}")
     print(f"Bridges: {len(bridges)}")
     print(f"Total Distance: {total_miles:.2f} miles ({total_km:.2f} km)")
+    return {
+        "nodes": graph.number_of_nodes(),
+        "edges": graph.number_of_edges(),
+        "depots": len(depots),
+        "bridges": len(bridges),
+        "total_distance_m": total_distance,
+        "total_distance_km": total_km,
+        "total_distance_miles": total_miles,
+    }
+
+
+def _compute_edge_curvatures(graph: nx.Graph):
+    distances = [data.get("highway_distance", 0) for _, _, data in graph.edges(data=True)]
+    if not distances:
+        return {}
+
+    min_distance = min(distances)
+    max_distance = max(distances)
+
+    if max_distance == min_distance:
+        return {(u, v): 0.0 for u, v in graph.edges()}
+
+    curvature_map = {}
+    max_curvature = 0.15
+
+    for u, v, data in graph.edges(data=True):
+        dist = data.get("highway_distance", 0)
+        if dist == min_distance:
+            curvature = 0.0
+        else:
+            normalized_distance_ratio = (dist - min_distance) / (max_distance - min_distance)
+            curvature = max_curvature * normalized_distance_ratio
+        curvature_map[(u, v)] = curvature
+
+    return curvature_map
 
 
 def plot_graph(graph: nx.Graph, output_path: str):
@@ -54,20 +101,33 @@ def plot_graph(graph: nx.Graph, output_path: str):
         "axes.titlesize": 12,
     })
 
-    fig, ax = plt.subplots(figsize=(10, 8))
-    positions = _scaled_positions(graph)
+    fig, ax = plt.subplots(figsize=(9, 6))
+    positions = _scaled_positions(graph, target_width=9.0, target_height=6.0)
+    curvature_map = _compute_edge_curvatures(graph)
 
-    nx.draw(
+    nx.draw_networkx_edges(
         graph,
         pos=positions,
-        with_labels=True,
-        node_size=260,
-        node_color="#2ca02c",
         edge_color="#7f7f7f",
         width=0.8,
+        ax=ax,
+        arrows=True,
+        connectionstyle=[f"arc3,rad={curvature_map.get((u, v), 0.0)}" for u, v in graph.edges()],
+    )
+
+    nx.draw_networkx_nodes(
+        graph,
+        pos=positions,
+        node_size=260,
+        node_color="#2ca02c",
+        ax=ax,
+    )
+
+    nx.draw_networkx_labels(
+        graph,
+        pos=positions,
         font_size=8,
         ax=ax,
-        connectionstyle="arc3,rad=0.1",
     )
 
     depots, bridges = _split_nodes(graph)
@@ -97,7 +157,47 @@ def plot_graph(graph: nx.Graph, output_path: str):
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     plt.savefig(output_path, format="pdf", bbox_inches="tight")
-    plt.show()
+    plt.close()
+
+
+def _write_markdown(graph: nx.Graph, stats: dict, output_path: str):
+    base_name = os.path.splitext(output_path)[0]
+    md_path = f"{base_name}.md"
+
+    depots, bridges = _split_nodes(graph)
+
+    edge_list = sorted(
+        [(u, v, data.get("highway_distance", 0)) for u, v, data in graph.edges(data=True)],
+        key=lambda x: x[2]
+    )
+
+    distances = [dist for _, _, dist in edge_list]
+    min_dist = min(distances) if distances else 0.0
+    max_dist = max(distances) if distances else 0.0
+    avg_dist = sum(distances) / len(distances) if distances else 0.0
+
+    with open(md_path, "w") as f:
+        f.write("# Bridge Subgraph Statistics\n\n")
+        f.write("## Summary\n\n")
+        f.write(f"- **Nodes:** {stats['nodes']}\n")
+        f.write(f"- **Edges:** {stats['edges']}\n")
+        f.write(f"- **Depots:** {stats['depots']}\n")
+        f.write(f"- **Bridges:** {stats['bridges']}\n")
+        f.write(f"- **Total Distance:** {stats['total_distance_miles']:.2f} miles ({stats['total_distance_km']:.2f} km)\n")
+        f.write(f"- **Min Edge Distance:** {min_dist / 1000:.2f} km ({min_dist / 1000 * 0.621371:.2f} miles)\n")
+        f.write(f"- **Avg Edge Distance:** {avg_dist / 1000:.2f} km ({avg_dist / 1000 * 0.621371:.2f} miles)\n")
+        f.write(f"- **Max Edge Distance:** {max_dist / 1000:.2f} km ({max_dist / 1000 * 0.621371:.2f} miles)\n\n")
+
+        f.write("## Edge Distances\n\n")
+        f.write("| Edge | Distance (km) | Distance (miles) |\n")
+        f.write("|------|---------------|------------------|\n")
+
+        for u, v, dist_m in edge_list:
+            dist_km = dist_m / 1000
+            dist_miles = dist_km * 0.621371
+            f.write(f"| {u}-{v} | {dist_km:.2f} | {dist_miles:.2f} |\n")
+
+    print(f"Markdown table saved to: {md_path}")
 
 
 def main() -> None:
@@ -113,8 +213,9 @@ def main() -> None:
     with open(pkl_path, "rb") as handle:
         graph = pickle.load(handle)
 
-    _print_stats(graph)
+    stats = _print_stats(graph)
     plot_graph(graph, output_path)
+    _write_markdown(graph, stats, output_path)
 
 
 if __name__ == "__main__":
