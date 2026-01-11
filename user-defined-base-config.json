@@ -2,7 +2,7 @@
   "paths": {
     "graph_file": "Missouri-Bridges-GeoData-Graphs/missouri_bridge_graph.pkl",
     "data_file": "Missouri-Bridges-GeoData-Graphs/MOpoorbridges.xlsx",
-    "subgraph_file": "Missouri-Bridges-GeoData-Graphs/missouri_bridge_subgraph_saved.pkl"
+    "subgraph_file": "Sample-Subgraphs/bridge_subgraph_015.pkl"
   },
   "selection": {
     "num_bridges": 10,

@@ -21,15 +21,21 @@ This project uses predefined bridge network subgraphs stored in `Sample-Subgraph
 python view_subgraph.py --pkl Sample-Subgraphs/bridge_subgraph_001.pkl --output Plots/subgraph-view.pdf
 ```
 
+## User-defined configuration
+Use `user-defined-base-config.json` to set all parameters and paths. The baseline subgraph defaults to `Sample-Subgraphs/bridge_subgraph_015.pkl` for one-at-a-time sensitivity runs.
+
 ## Run (single config)
 ```
-python scripts/run_mdvrpdw.py --config base-config.json --output outputs/solution.json
+python scripts/run_mdvrpdw.py --output outputs/solution.json
 ```
 
 ## Run (sensitivity sweep)
 ```
-python scripts/run_sensitivity.py --base-config base-config.json --param-grid param-grid.json --output outputs/sweep.json
+python scripts/run_sensitivity.py --param-grid param-grid.json --output outputs/sweep.json
 ```
+
+## Sensitivity mode
+Default mode is one-at-a-time (each parameter varied independently). Use `--mode full_grid` to run the full Cartesian grid.
 
 ## Notes
 - Depots are bridge nodes; MoDOT can be excluded from service.
