@@ -1,0 +1,28 @@
+{
+  "solutions": [
+    {
+      "status": 2,
+      "objective": 1.0,
+      "assignments": [],
+      "resilience": 1.0,
+      "cost": 0.0,
+      "epsilon": 20000
+    },
+    {
+      "status": 2,
+      "objective": 1.0,
+      "assignments": [],
+      "resilience": 1.0,
+      "cost": 0.0,
+      "epsilon": 30000
+    },
+    {
+      "status": 2,
+      "objective": 1.0,
+      "assignments": [],
+      "resilience": 1.0,
+      "cost": 0.0,
+      "epsilon": 40000
+    }
+  ]
+}

@@ -29,6 +29,11 @@ Use `user-defined-base-config.json` to set all parameters and paths. The baselin
 python scripts/run_mdvrpdw.py --output outputs/solution.json
 ```
 
+## Enable solver logs
+```
+python scripts/run_mdvrpdw.py --solver-log --solver-display-interval 1 --output outputs/solution.json
+```
+
 ## Run (sensitivity sweep)
 ```
 python scripts/run_sensitivity.py --param-grid param-grid.json --output outputs/sweep.json

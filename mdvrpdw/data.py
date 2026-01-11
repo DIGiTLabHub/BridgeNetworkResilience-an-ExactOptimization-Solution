@@ -81,7 +81,7 @@ def _compute_bfi(df: pd.DataFrame, bridge_ids: Iterable[str], config: Dict[str, 
 
 
 def _compute_time_windows(
-    bridge_ids: Iterable[str],
+    node_ids: Iterable[str],
     horizon_hours: float,
     window_length_hours: float,
     window_slack_hours: float,
@@ -90,8 +90,8 @@ def _compute_time_windows(
     windows = {}
     window_length = window_length_hours * window_scale
     latest_finish = min(horizon_hours, window_length + window_slack_hours)
-    for bridge_id in bridge_ids:
-        windows[bridge_id] = (0.0, latest_finish)
+    for node_id in node_ids:
+        windows[node_id] = (0.0, latest_finish)
     return windows
 
 
@@ -123,13 +123,17 @@ def load_inputs(config: Dict[str, Any]) -> Dict[str, Any]:
     )
 
     exclude_modot = config["selection"]["exclude_modot_from_service"]
-    service_nodes = [node for node in nodes if not (exclude_modot and node == "MoDOT")]
+    non_service_nodes = [node for node in nodes if exclude_modot and node == "MoDOT"]
+    service_nodes = [node for node in nodes if node not in non_service_nodes]
 
     severity = _compute_severity(df, service_nodes, config)
     bfi = _compute_bfi(df, nodes, config)
 
+    for node in non_service_nodes:
+        severity[node] = 0.0
+
     time_windows = _compute_time_windows(
-        service_nodes,
+        nodes,
         float(config["time"]["horizon_hours"]),
         float(config["time"]["window_length_hours"]),
         float(config["time"]["window_slack_hours"]),
@@ -151,14 +155,22 @@ def load_inputs(config: Dict[str, Any]) -> Dict[str, Any]:
             }
         )
 
+    tau = {}
+    for node in nodes:
+        for team in teams:
+            tau[(node, team["name"])] = severity.get(node, 0.0) * team["service_hours"]
+
     alpha = float(config["cost"]["alpha"])
     cost_scale = float(config["cost"]["scale"])
     costs = {}
-    for bridge_id in service_nodes:
+    delta_xi = {}
+    for node in nodes:
         for team in teams:
-            costs[(bridge_id, team["name"])] = cost_scale * team["base_cost"] * (1 + alpha * (1 - bfi[bridge_id]))
+            costs[(node, team["name"])] = cost_scale * team["base_cost"] * (1 + alpha * (1 - bfi[node]))
+            delta = team["delta"]
+            delta_xi[(node, team["name"])] = max(0.0, min(1.0, bfi[node] + delta) - bfi[node])
 
-    max_service = max(team["service_hours"] for team in teams) if teams else 0.0
+    max_service = max(tau.values()) if tau else 0.0
     max_travel = max(travel_times.values()) if travel_times else 0.0
     horizon = float(config["time"]["horizon_hours"])
     big_m = config["solver"]["big_m"]
@@ -169,12 +181,15 @@ def load_inputs(config: Dict[str, Any]) -> Dict[str, Any]:
         "graph": graph,
         "nodes": nodes,
         "service_nodes": service_nodes,
+        "non_service_nodes": non_service_nodes,
         "travel_times": travel_times,
         "severity": severity,
         "bfi": bfi,
         "time_windows": time_windows,
         "teams": teams,
         "costs": costs,
+        "delta_xi": delta_xi,
+        "tau": tau,
         "big_m": big_m,
         "horizon": horizon,
         "modot_present": modot_present,

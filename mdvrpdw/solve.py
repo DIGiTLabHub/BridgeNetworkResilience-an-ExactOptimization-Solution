@@ -15,42 +15,49 @@ def _apply_solver_params(model: gp.Model, solver_config: Dict[str, Any]) -> None
         model.setParam(GRB.Param.MIPGap, solver_config["mip_gap"])
     if solver_config.get("threads") is not None:
         model.setParam(GRB.Param.Threads, solver_config["threads"])
+    if solver_config.get("output_flag") is not None:
+        model.setParam(GRB.Param.OutputFlag, solver_config["output_flag"])
+    if solver_config.get("log_to_console") is not None:
+        model.setParam(GRB.Param.LogToConsole, solver_config["log_to_console"])
+    if solver_config.get("log_file"):
+        model.setParam(GRB.Param.LogFile, solver_config["log_file"])
+    if solver_config.get("display_interval") is not None:
+        model.setParam(GRB.Param.DisplayInterval, solver_config["display_interval"])
 
 
-def _build_resilience_expr(inputs: Dict[str, Any], y_vars: Dict[Any, Any]) -> gp.LinExpr:
+def _build_resilience_expr(inputs: Dict[str, Any], y_vars: gp.tupledict) -> gp.LinExpr:
     nodes: List[str] = inputs["nodes"]
-    service_nodes: List[str] = inputs["service_nodes"]
-    bfi = inputs["bfi"]
-    teams = inputs["teams"]
     depots = inputs["depots"]
+    teams = inputs["teams"]
+    delta_xi = inputs["delta_xi"]
 
-    base_resilience = sum(bfi[node] for node in nodes) / len(nodes)
-    expr = gp.LinExpr(base_resilience)
-
-    for node in service_nodes:
+    expr = gp.LinExpr()
+    for node in nodes:
         for depot in depots:
             for team in teams:
-                delta = team["delta"]
-                coeff = (min(1.0, bfi[node] + delta) - bfi[node]) / len(nodes)
-                expr.add(y_vars[(depot, team["name"], node)], coeff)
+                expr.add(y_vars[depot, team["name"], node], delta_xi[(node, team["name"])])
     return expr
 
 
-def _build_cost_expr(inputs: Dict[str, Any], y_vars: Dict[Any, Any]) -> gp.LinExpr:
+def _build_cost_expr(inputs: Dict[str, Any], y_vars: gp.tupledict) -> gp.LinExpr:
     costs = inputs["costs"]
     depots = inputs["depots"]
     teams = inputs["teams"]
-    service_nodes = inputs["service_nodes"]
+    nodes = inputs["nodes"]
 
     expr = gp.LinExpr()
-    for node in service_nodes:
+    for node in nodes:
         for depot in depots:
             for team in teams:
-                expr.add(y_vars[(depot, team["name"], node)], costs[(node, team["name"])])
+                expr.add(y_vars[depot, team["name"], node], costs[(node, team["name"])])
     return expr
 
 
-def _extract_solution(inputs: Dict[str, Any], model: gp.Model, y_vars: Dict[Any, Any]) -> Dict[str, Any]:
+def _extract_solution(
+    model_bundle: Dict[str, Any],
+    model: gp.Model,
+    inputs: Dict[str, Any],
+) -> Dict[str, Any]:
     solution = {
         "status": model.Status,
         "objective": model.ObjVal if model.SolCount else None,
@@ -58,11 +65,38 @@ def _extract_solution(inputs: Dict[str, Any], model: gp.Model, y_vars: Dict[Any,
     if not model.SolCount:
         return solution
 
-    assigned = []
-    for (depot, team, node), var in y_vars.items():
-        if var.X > 0.5:
-            assigned.append({"depot": depot, "team": team, "bridge": node})
-    solution["assignments"] = assigned
+    nodes = inputs["nodes"]
+    depots = inputs["depots"]
+    teams = inputs["teams"]
+
+    x_vars = model_bundle["x"]
+    y_vars = model_bundle["y"]
+    s_vars = model_bundle["s"]
+    u_vars = model_bundle["u"]
+    arcs = model_bundle["arcs"]
+
+    teams_used = []
+    repairs = []
+    arcs_used = []
+    start_times = []
+
+    for depot in depots:
+        for team in teams:
+            name = team["name"]
+            if u_vars[depot, name].X > 0.5:
+                teams_used.append({"depot": depot, "team": name})
+            for node in nodes:
+                if y_vars[depot, name, node].X > 0.5:
+                    repairs.append({"depot": depot, "team": name, "bridge": node})
+                    start_times.append({"depot": depot, "team": name, "bridge": node, "start": s_vars[depot, name, node].X})
+            for (i, j) in arcs:
+                if x_vars[depot, name, i, j].X > 0.5:
+                    arcs_used.append({"depot": depot, "team": name, "from": i, "to": j})
+
+    solution["teams_used"] = teams_used
+    solution["repairs"] = repairs
+    solution["arcs"] = arcs_used
+    solution["start_times"] = start_times
     solution["resilience"] = None
     solution["cost"] = None
     return solution
@@ -103,7 +137,7 @@ def solve_mdvrpdw(config: Dict[str, Any]) -> Dict[str, Any]:
             constraint = model.addConstr(cost_expr <= epsilon, name=f"epsilon_{epsilon}")
             model.setObjective(resilience_expr, GRB.MAXIMIZE)
             model.optimize()
-            result = _extract_solution(inputs, model, y_vars)
+            result = _extract_solution(model_bundle, model, inputs)
             result["epsilon"] = epsilon
             if model.SolCount:
                 result["resilience"] = resilience_expr.getValue()
@@ -115,7 +149,7 @@ def solve_mdvrpdw(config: Dict[str, Any]) -> Dict[str, Any]:
 
     model.setObjective(resilience_expr, GRB.MAXIMIZE)
     model.optimize()
-    result = _extract_solution(inputs, model, y_vars)
+    result = _extract_solution(model_bundle, model, inputs)
     if model.SolCount:
         result["resilience"] = resilience_expr.getValue()
         result["cost"] = cost_expr.getValue()

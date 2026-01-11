@@ -5,7 +5,7 @@
     "subgraph_file": "Sample-Subgraphs/bridge_subgraph_015.pkl"
   },
   "selection": {
-    "num_bridges": 10,
+    "num_bridges": 15,
     "random_state": 42,
     "exclude_modot_from_service": true
   },
@@ -23,12 +23,12 @@
     "q_i_min": 1.0
   },
   "resilience": {
-    "bfi_scale": 1.0,
-    "delta_by_team": {"RRU": 0.3, "ERT": 0.55, "CIRS": 0.75}
+    "bfi_scale": 0.4,
+    "delta_by_team": {"RRU": 0.3, "ERT": 0.55, "CIRS": 0.68}
   },
   "time": {
     "horizon_hours": 168.0,
-    "window_length_hours": 72.0,
+    "window_length_hours": 168.0,
     "window_slack_hours": 0.0,
     "window_scale": 1.0
   },
@@ -51,6 +51,10 @@
     "time_limit": null,
     "mip_gap": null,
     "threads": null,
+    "output_flag": 0,
+    "log_to_console": 0,
+    "log_file": null,
+    "display_interval": null,
     "epsilon_values": [20000, 30000, 40000]
   }
 }

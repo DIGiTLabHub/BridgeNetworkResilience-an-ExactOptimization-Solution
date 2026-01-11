@@ -5,5 +5,5 @@ matplotlib
 numpy
 openpyxl
 
-# Optional (optimization phase)
-# gurobipy
+# Optimization (required for solver)
+gurobipy
